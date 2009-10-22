@@ -54,3 +54,4 @@ coverage/*
 var
 TAGS
 nbproject
+*.orig
