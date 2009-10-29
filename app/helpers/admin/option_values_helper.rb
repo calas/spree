@@ -1,2 +1,2 @@
-module OptionValuesHelper
+module Admin::OptionValuesHelper
 end

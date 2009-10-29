@@ -1,4 +1,4 @@
-class Calculator < ActiveRecord::Base  
+class Calculator < ActiveRecord::Base
   belongs_to :calculable, :polymorphic => true
 
   # This method must be overriden in concrete calculator.
@@ -10,7 +10,7 @@ class Calculator < ActiveRecord::Base
 
   # overwrite to provide description for your calculators
   def self.description
-    "Base Caclulator"
+    "Base Calculator"
   end
 
   ###################################################################

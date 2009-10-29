@@ -6,31 +6,33 @@ module Admin::BaseHelper
   def link_to_edit(resource)
     link_to_with_icon('edit', t("edit"), edit_object_url(resource))
   end
-  
+
   def link_to_clone(resource)
     link_to_with_icon('exclamation', t("clone"), clone_admin_product_url(resource))
   end
-  
-  def link_to_delete(resource, options = {})
-	  options.assert_valid_keys(:url, :caption, :title)
 
-		options.reverse_merge! :url => object_url(resource) unless options.key? :url
+  def link_to_delete(resource, options = {})
+    options.assert_valid_keys(:url, :caption, :title)
+
+    options.reverse_merge! :url => object_url(resource) unless options.key? :url
     options.reverse_merge! :caption => t('are_you_sure')
     options.reverse_merge! :title => t('confirm_delete')
 
     #link_to_with_icon('delete', t("delete"), object_url(resource), :confirm => t('are_you_sure'), :method => :delete )
-		link_to_function icon("delete") + ' ' + t("delete"), "jConfirm('#{options[:caption]}', '#{options[:title]}', function(r) { 
-      if(r){ 
-        jQuery.ajax({
-          type: 'POST',
-          url: '#{options[:url]}',
-          data: ({_method: 'delete', authenticity_token: AUTH_TOKEN}),
-          success: function(r){ jQuery('##{dom_id resource}').fadeOut('hide'); } 
-        });
-      }
-		});"
+    link_to_function icon("delete") + ' ' + t("delete"), <<-FUNCTION
+       jConfirm('#{options[:caption]}', '#{options[:title]}', function(r) {
+         if(r){
+           jQuery.ajax({
+             type: 'POST',
+             url: '#{options[:url]}',
+             data: ({_method: 'delete', authenticity_token: AUTH_TOKEN}),
+             success: function(r){ jQuery('##{dom_id resource}').fadeOut('hide'); }
+           });
+         }
+       });
+    FUNCTION
   end
-  
+
   def link_to_with_icon(icon_name, text, url, options = {})
     link_to(icon(icon_name) + ' ' + text, url, options.update(:class => 'iconlink'))
   end
@@ -38,7 +40,7 @@ module Admin::BaseHelper
   def icon(icon_name)
     image_tag("/images/admin/icons/#{icon_name}.png")
   end
-  
+
   def button(text, icon = nil, button_type = 'submit', options={})
     content_tag('button', content_tag('span', text), options.merge(:type => button_type))
   end
@@ -46,22 +48,22 @@ module Admin::BaseHelper
   def button_link_to(text, url, html_options = {})
     link_to(text_for_button_link(text, html_options), url, html_options_for_button_link(html_options))
   end
-  
+
   def button_link_to_function(text, function, html_options = {})
     link_to_function(text_for_button_link(text, html_options), function, html_options_for_button_link(html_options))
   end
-  
-  def button_link_to_remote(text, options, html_options = {})    
+
+  def button_link_to_remote(text, options, html_options = {})
     link_to_remote(text_for_button_link(text, html_options), options, html_options_for_button_link(html_options))
   end
-  
+
   def link_to_remote(name, options = {}, html_options = {})
     options[:before] ||= "jQuery(this).parent().hide(); jQuery('#busy_indicator').show();"
     options[:complete] ||= "jQuery('#busy_indicator').hide()"
     link_to_function(name, remote_function(options), html_options || options.delete(:html))
   end
 
-  
+
   def text_for_button_link(text, html_options)
     s = ''
     if html_options[:icon]
@@ -96,14 +98,14 @@ module Admin::BaseHelper
     ## if more than one form, it'll capitalize all words
     label_with_first_letters_capitalized = t(options[:label]).gsub(/\b\w/){$&.upcase}
     link = link_to(label_with_first_letters_capitalized, destination_url)
-    
+
     css_classes = []
 
     selected = if options[:match_path]
-      request.request_uri.starts_with?("/admin#{options[:match_path]}")
-    else
-      args.include?(controller.controller_name.to_sym)
-    end
+                 request.request_uri.starts_with?("/admin#{options[:match_path]}")
+               else
+                 args.include?(controller.controller_name.to_sym)
+               end
     css_classes << 'selected' if selected
 
     if options[:css_class]
@@ -115,7 +117,7 @@ module Admin::BaseHelper
 
   def field_container(model, method, options = {}, &block)
     unless error_message_on(model, method).blank?
-      css_class = 'withError' 
+      css_class = 'withError'
     end
     html = content_tag('p', capture(&block), :class => css_class)
     concat(html)
@@ -126,11 +128,11 @@ module Admin::BaseHelper
     end
   end
 
-  def get_additional_field_value(controller, field)  
+  def get_additional_field_value(controller, field)
     attribute = attribute_name_for(field[:name])
 
-    value = eval("@" + controller.controller_name.singularize + "." + attribute)  
-    
+    value = eval("@" + controller.controller_name.singularize + "." + attribute)
+
     if value.nil? && controller.controller_name == "variants"
       value = @variant.product.has_attribute?(attribute) ? @variant.product[attribute] : nil
     end
@@ -159,7 +161,7 @@ module Admin::BaseHelper
   def generate_html(form_builder, method, options = {})
     options[:object] ||= form_builder.object.class.reflect_on_association(method).klass.new
     options[:partial] ||= method.to_s.singularize
-    options[:form_builder_local] ||= :f  
+    options[:form_builder_local] ||= :f
 
     form_builder.fields_for(method, options[:object], :child_index => 'NEW_RECORD') do |f|
       render(:partial => options[:partial], :locals => { options[:form_builder_local] => f })
@@ -182,79 +184,76 @@ module Admin::BaseHelper
     case options[:type]
     when :integer
       form.text_field(field, {
-          :size => 10,
-          :class => 'input_integer',
-          :readonly => options[:readonly],
-          :disabled => options[:disabled]
-        }
-      )
+                        :size => 10, :class => 'input_integer',
+                        :readonly => options[:readonly],
+                        :disabled => options[:disabled]
+                      })
     when :boolean
-      form.check_box(field, {:readonly => options[:readonly],
-          :disabled => options[:disabled]})
+      form.check_box(field, {
+                       :readonly => options[:readonly],
+                       :disabled => options[:disabled]
+                     })
     when :string
       form.text_field(field, {
-          :size => 10,
-          :class => 'input_string',
-          :readonly => options[:readonly],
-          :disabled => options[:disabled]
-        }
-      )
+                        :size => 10, :class => 'input_string',
+                        :readonly => options[:readonly],
+                        :disabled => options[:disabled]
+                      })
     when :text
-      form.text_area(field,
-        {:rows => 15, :cols => 85, :readonly => options[:readonly],
-          :disabled => options[:disabled]}
-      )
+      form.text_area(field, {
+                       :rows => 15, :cols => 85,
+                       :readonly => options[:readonly],
+                       :disabled => options[:disabled]
+                     })
     else
       form.text_field(field, {
-          :size => 10,
-          :class => 'input_string',
-          :readonly => options[:readonly],
-          :disabled => options[:disabled]
-        }
-      )
+                        :size => 10, :class => 'input_string',
+                        :readonly => options[:readonly],
+                        :disabled => options[:disabled]
+                      })
     end
   end
 
   def preference_fields(object, form)
     return unless object.respond_to?(:preferences)
     object.preferences.keys.map{ |key|
-			next unless object.class.preference_definitions.has_key? key
-			
+      next unless object.class.preference_definitions.has_key? key
+
       definition = object.class.preference_definitions[key]
       type = definition.instance_eval{@type}.to_sym
-      
+
       form.label("preferred_#{key}", t(key)+": ") +
-        preference_field(form, "preferred_#{key}", :type => type)
+      preference_field(form, "preferred_#{key}", :type => type)
     }.join("<br />")
   end
-  
+
   def additional_field_for(controller, field)
-     field[:use] ||= 'text_field'
-     options = field[:options] || {}
+    field[:use] ||= 'text_field'
+    options = field[:options] || {}
 
-     object_name, method = controller.controller_name.singularize, attribute_name_for(field[:name])
+    object_name, method = controller.controller_name.singularize, attribute_name_for(field[:name])
 
-     case field[:use]    
-     when 'check_box'
-       check_box(object_name, method, options, field[:checked_value] || 1, field[:unchecked_value] || 0)
-     when 'radio_button'
-       html = ''
-       field[:value].call(controller, field).each do |value| 
-         html << radio_button(object_name, method, value, options)
-         html << " #{value.to_s} "
-       end
-       html
-     when 'select'
-       select(object_name, method, field[:value].call(controller, field), options, field[:html_options] || {})
-     else
-       value = field[:value] ? field[:value].call(controller, field) : get_additional_field_value(controller, field)
-       __send__(field[:use], object_name, method, options.merge(:value => value))
-     end # case
-   end
-   
+    case field[:use]
+    when 'check_box'
+      check_box(object_name, method, options, field[:checked_value] || 1, field[:unchecked_value] || 0)
+    when 'radio_button'
+      html = ''
+      field[:value].call(controller, field).each do |value|
+        html << radio_button(object_name, method, value, options)
+        html << " #{value.to_s} "
+      end
+      html
+    when 'select'
+      select(object_name, method, field[:value].call(controller, field), options, field[:html_options] || {})
+    else
+      value = field[:value] ? field[:value].call(controller, field) : get_additional_field_value(controller, field)
+      __send__(field[:use], object_name, method, options.merge(:value => value))
+    end # case
+  end
+
   private
+
   def attribute_name_for(field_name)
     field_name.gsub(' ', '_').downcase
   end
-  
 end
