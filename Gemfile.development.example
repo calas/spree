@@ -1,0 +1,7 @@
+warn "=> Loading Gemfile.development"
+
+group :development do
+  gem "sqlite3-ruby", :require => nil
+  gem "mongrel", :require => nil
+  gem "ruby-debug", :require => nil
+end

@@ -42,3 +42,8 @@ var
 TAGS
 nbproject
 vendor/extensions/theme_default/app/stylesheets/*.css
+
+Gemfile.development
+Gemfile.lock
+.bundle
+
