@@ -1,16 +1,8 @@
-# bundle_path "vendor/bundler_gems"
+require File.expand_path('../lib/spree/bundler_ext', __FILE__)
 
-source :gemcutter
+source "http://gemcutter.org"
 
-group :rails do
-  gem 'rails', '~> 2.3.5', :require => nil
-  gem 'builder', '~> 2.1.2'
-  gem 'memcache-client', '>= 1.7.4', :require => nil
-  gem 'tzinfo', '~> 0.3.12'
-  gem 'i18n', '>= 0.1.3'
-  gem 'tmail', '~> 1.2.3'
-  gem 'text-format', '>= 0.6.3', :require => 'text/format'
-end
+gem 'rails', '~> 2.3.5', :require => nil
 
 gem "activemerchant", "1.5.0", :require => "active_merchant"
 gem "activerecord-tableless", "0.1.0", :require => "tableless"
@@ -26,18 +18,12 @@ gem "state_machine", "0.8.0"
 gem "stringex", "1.0.3"
 gem "whenever", "0.3.7", :require => nil
 gem "will_paginate", "2.3.11"
+gem "ruby-openid", ">= 2.0.4", :require => 'openid'
 
 group :test do
   gem "shoulda", "2.10.2"
   gem "factory_girl", "1.2.3"
 end
 
-Dir.glob(File.expand_path("../vendor/extensions/**/Gemfile", __FILE__)).each do |ext|
-  puts "=> Loading #{ext}"
-  instance_eval(File.read(ext), ext)
-end
-
-development_gemfile = File.expand_path("../Gemfile.development", __FILE__)
-if File.exists?(development_gemfile)
-  instance_eval(File.read(development_gemfile), development_gemfile)
-end
+load_extensions_gemfiles
+load_development_gemfile
